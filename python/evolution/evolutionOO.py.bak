@@ -87,10 +87,5 @@ class Evolution:
             print event,data
         setAttr(evolution,'callback_'.join([event]),callback)
         
-startStr = ""
-target = "abcdefghijklmnopqrstuvwxyz"
-noOfMorphs = 3
-similarityPercentage = 20
-topPercentage = 20
-evo = Evolution(startStr,target,noOfMorphs,similarityPercentage,topPercentage)
-Evolution.setDefaultCallbacks(evo)    
+evo = Evolution(self,startStr,target,noOfMorphs,similarityPercentage,topPercentage)
+    
