@@ -1,0 +1,93 @@
+import random
+import string
+import operator
+#conditions: 
+#similarityPercentage
+#topPercentage
+
+alphabetsList = list(string.ascii_lowercase)
+
+#type conversions and validation before proper computing
+def roll(inputStr,target,noOfMorphs,similarityPercentage,topPercentage):
+  if len(inputStr) > len(target):
+    print "input string is longer than target string"
+    return
+  
+  inputStr = inputStr.ljust(len(target))
+  print "before: '" + inputStr + "' target: '" + target +"'" ,"number of morphs:", noOfMorphs, "morphs, begin! "
+  similarityPercentage = float(similarityPercentage)
+  topPercentage = float(topPercentage)
+ 
+  found = loopingGenerateAndProcessMorphs(inputStr,target,noOfMorphs,similarityPercentage,topPercentage)
+  print "FOUND!", found, "BYE BYE!!"
+  return
+
+def loopingGenerateAndProcessMorphs(inputStr,target,noOfMorphs,similarityPercentage,topPercentage): 
+  oldMorphArr = []
+  while True:
+    newMorphArr = []
+    for inputStr in oldMorphArr:
+      morphArr = generateMorphs(inputStr,noOfMorphs)
+      print "morphs"
+      print morphArr
+      print "surviving"
+      morphArr = processMorphs(morphArr,target,similarityPercentage,topPercentage)
+      newMorphArr.extend(morphArr)
+      print morphArr
+    print newMorphArr
+  return
+
+def processMorphs(morphArr,target,similarityPercentage,topPercentage):
+  morphArr[:] = [ [morphed,(similaritiesPercentage(morphed,target))] for i,morphed in enumerate(morphArr) if (similaritiesPercentage(morphed,target)) > similarityPercentage ]
+  ''' 
+  for idx, morphed in enumerate(morphArr):
+    #criteria: similarityPercentage
+    if (percentage = similaritiesPercentage(comp,target))>similarityPercentage):
+      morphArr[idx] = [morphed,countSameChars(morphed,target)]
+    else:
+      del morphArr[idx]
+  '''
+  print "metadata:",morphArr
+  getcount = operator.itemgetter(1)
+  map(getcount, morphArr)
+  print sorted(morphArr, key=getcount,reverse=True) 
+  for idx, withMeta in enumerate(morphArr):
+    morphArr[idx] = withMeta[0]
+  print "without:",morphArr
+  return morphArr
+
+def similaritiesPercentage(comp,target):
+  return  (float(countSameChars(comp,target)) /float( len(target))) * 100
+
+def countSameChars(comp,target):
+  counter = 0
+  comp = list(comp)
+  target = list(target) 
+  for x in xrange(len(comp)): 
+    if target[x] == comp[x]:
+      counter += 1
+  return counter
+
+def generateMorphs(inputStr,noOfMorphs):
+  targetLen = len(inputStr)
+  charArr = list(inputStr)
+  #generate morphs
+  morphArr = []
+  for x in xrange(noOfMorphs):
+    #copy array for morphing
+    newCharArr = list(charArr)
+    #get positions of characters to morph
+    numOfPositions = random.randrange(targetLen)
+    positions = random.sample(range(targetLen),numOfPositions)
+    for position in positions:
+      global alphabetsList
+      #new character for position
+      newChar = random.choice(alphabetsList)
+      newCharArr[position] = newChar
+    morphArr.append(''.join(newCharArr))
+  return morphArr
+
+morphArr = generateMorphs("aaaaa",5)
+processMorphs(morphArr,"abbbb",1,100)
+if False:
+  roll("abcde","abcdef",5,70,2)
