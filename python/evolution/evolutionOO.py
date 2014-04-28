@@ -1,6 +1,12 @@
-#evolution OO
+# evolution OO
+import random
+import string
+import operator
+
+alphabetsList = list(string.ascii_lowercase)
+
 class Evolution:
-  def __init__(self,startStr,target,noOfMorphs,similarityPercentage,topPercentage):
+  def __init__(self, startStr, target, noOfMorphs, similarityPercentage, topPercentage):
     self.startStr = startStr.ljust(len(target))
     self.target = target
     self.noOfMorphs = int((topPercentage / 100.0) * noOfMorphs) + 1
@@ -12,85 +18,99 @@ class Evolution:
         def default_callback(data):
             print data  
             
-  def set_callback(self,event,callback):
-    setattr(self, 'callback_'.join([event]), callback)
+  def set_callback(self, event, callback):
+    setattr(self, 'callback_' + event, callback)
    
-  def callback(self,event,morphs):
-    if hasattr(self, 'callback_'.join([event])):
-        callback = getattr(self, 'callback_'.join([event]))
-        if callback is not None:
-          self.callback(morphs)
+  def callback(self, event, morphs):
+    if hasattr(self, 'callback_' + event):
+        callback_assigned = getattr(self, 'callback_' + event)
+        if callback_assigned is not None:
+          callback_assigned(morphs)
         
   def start(self):
-    oldMorphArr = processMorphs(generateMorphs(self.startStr),target,similarityPercentage,topPercentage,noOfMorphs)
+    oldMorphArr = self.processMorphs(self.generateMorphs(self.startStr))
     counter = 0
     while True:
         counter = counter + 1
         print "generation " , counter
         newMorphArr = []
         for inputStr in oldMorphArr:
-            morphArr = generateMorphs(inputStr,noOfMorphs)
-            self.callback('generatedMorphs',morphArr)
-            morphArr = processMorphs(morphArr,target,similarityPercentage,topPercentage,noOfMorphs)
-            self.callback('processedMorphs',morphArr)
+            morphArr = generateMorphs(inputStr, noOfMorphs)
+            self.callback('generatedMorphs', morphArr)
+            morphArr = processMorphs(morphArr, target, similarityPercentage, topPercentage, noOfMorphs)
+            self.callback('processedMorphs', morphArr)
             newMorphArr.extend(morphArr)
         
         print "extended "
         print newMorphArr
         print "selected extended"
-        newMorphArr = processMorphs(newMorphArr,target,similarityPercentage,topPercentage,noOfMorphs)
-        print newMorphArr
-        if(target in newMorphArr):
-          return counter
-        oldMorphArr = newMorphArr
-        
-  def generateMorphs(self,inputStr):
+        newMorphArr = self.processMorphs(newMorphArr)
+  def generateMorphs(self, inputStr):
     targetLen = len(inputStr)
     charArr = list(inputStr)
-    #generate morphs
+    # generate morphs
     morphArr = []
     for x in xrange(self.noOfMorphs):
-        #copy array for morphing
+        # copy array for morphing
         newCharArr = list(charArr)
-        #get positions of characters to morph
+        # get positions of characters to morph
         numOfPositions = random.randrange(targetLen)
-        positions = random.sample(range(targetLen),numOfPositions)
+        positions = random.sample(range(targetLen), numOfPositions)
+        global alphabetsList
         for position in positions:
-            global alphabetsList
-            #new character for position
+            # new character for position
             newChar = random.choice(alphabetsList)
             newCharArr[position] = newChar
         morphArr.append(''.join(newCharArr))
     return morphArr
-  def processMorphs(morphArr):
-    #use topPercentage to calculate number of morphs to be kept
+  def processMorphs(self, morphArr):
+    # use topPercentage to calculate number of morphs to be kept
     selectedNoOfMorphs = int((topPercentage / 100.0) * noOfMorphs) + 1
-    morphArr[:] = [ [morphed,(similaritiesPercentage(morphed,target))] for i,morphed in enumerate(morphArr) if (similaritiesPercentage(morphed,target)) > similarityPercentage ] 
-    #print "metadata:",morphArr
-    #sort
+    morphArr[:] = [ [morphed, (Evolution.similaritiesPercentage(morphed, target))] for i, morphed in enumerate(morphArr) if (Evolution.similaritiesPercentage(morphed, target)) > similarityPercentage ] 
+    # print "metadata:",morphArr
+    # sort
     getcount = operator.itemgetter(1)
     map(getcount, morphArr)
-    morphArr = sorted(morphArr, key=getcount,reverse=True)
+    morphArr = sorted(morphArr, key=getcount, reverse=True)
     morphArr = morphArr[0:noOfMorphs]
-    #remove metadata
+    # remove metadata
     for idx, withMeta in enumerate(morphArr):
         morphArr[idx] = withMeta[0]
-    #print "without:",morphArr
+    # print "without:",morphArr
     return morphArr
 
-  events = ['processedMorphs','generatedMorphs']
+  events = ['processedMorphs', 'generatedMorphs']
 
   @staticmethod
   def setDefaultCallbacks(evolution):
-     for event in events:
-        def callback(data):
-            print event,data
-        setAttr(evolution,'callback_'.join([event]),callback)
-        
-startStr = ""
+    for event in Evolution.events:
+      print 'hi ' + event
+      def callback(data):
+        print 'default callback | event: ' + event +' | data: ' + data
+      print 'hello callback_' + event
+      setattr(evolution, 'callback_' + event , callback)
+
+  @staticmethod
+  def similaritiesPercentage(comp, target):
+    return (float(Evolution.countSameChars(comp, target)) / float(len(target))) * 100         
+  @staticmethod
+  def countSameChars(comp, target):
+    counter = 0
+    comp = list(comp)
+    target = list(target)
+    # compare available characters (length of shorter string)
+    maxLen = len(comp) if len(comp) < len(target) else len(target)
+    for x in xrange(maxLen): 
+        if target[x] == comp[x]:
+            counter += 1
+    return counter
+startStr = "a"
 target = "abcdefghijklmnopqrstuvwxyz"
 noOfMorphs = 3
-similarityPercentage = 20
-topPercentage = 20
-evo = Evolution(startStr,target,noOfMorphs,similarityPercentage,topPercentage)
-Evolution.setDefaultCallbacks(evo)    
+similarityPercentage = 10
+topPercentage = 30
+evo = Evolution(startStr, target, noOfMorphs, similarityPercentage, topPercentage)
+Evolution.setDefaultCallbacks(evo)
+for event in Evolution.events:    
+  evo.callback(event, "DATA")
+# evo.start()

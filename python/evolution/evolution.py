@@ -101,4 +101,4 @@ def generateMorphs(inputStr,noOfMorphs):
         morphArr.append(''.join(newCharArr))
     return morphArr
 
-#roll("","abcdefghijklmnopqrstuvwxyz",100,2,10)
+roll("","abcdefghijklmnopqrstuvwxyz",100,2,10)

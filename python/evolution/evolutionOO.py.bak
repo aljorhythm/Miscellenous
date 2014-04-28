@@ -82,10 +82,16 @@ class Evolution:
 
   @staticmethod
   def setDefaultCallbacks(evolution):
-     for event in events:
-        def callback(data):
-            print event,data
-        setAttr(evolution,'callback_'.join([event]),callback)
+     for event in Evolution.events:
+        print 'hi ',event
+        'def callback(data):   print data
+        print 'hello callback_'.join([event])
+        setattr(evolution,'callback_'.join([event]),callback)
         
-evo = Evolution(self,startStr,target,noOfMorphs,similarityPercentage,topPercentage)
-    
+startStr = ""
+target = "abcdefghijklmnopqrstuvwxyz"
+noOfMorphs = 3
+similarityPercentage = 20
+topPercentage = 20
+evo = Evolution(startStr,target,noOfMorphs,similarityPercentage,topPercentage)
+Evolution.setDefaultCallbacks(evo)    
